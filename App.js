@@ -32,7 +32,7 @@ export default function App() {
   }
   return (
      <NavigationContainer theme={isDark ? DarkTheme : DefaultTheme}>
-      <Root/>
+        <Root/>
     </NavigationContainer>
   );
   
