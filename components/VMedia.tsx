@@ -7,7 +7,6 @@ import Votes from "./Votes";
 
 
 const Movie = styled.View`
-    margin-right: 20px;
     align-items: center;
 `
 
