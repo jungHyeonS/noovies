@@ -30,16 +30,27 @@ export interface MovieResponse extends BaseResponse{
     results:Movie[]
 }
 
-const getTrending = () => 
-    fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}&language=en-US&page=1&region=KR`).then(response => response.json())
-
-const getUpcoming = () => 
-    fetch(`${BASE_URL}/movie/upcoming?api_key=${API_KEY}&language=en-US&page=1&region=KR`).then(response => response.json())
 
 
-const getNowPlaying = () =>
-    fetch(`${BASE_URL}/movie/now_playing?api_key=${API_KEY}&language=en-US&page=1&region=KR`).then(response => response.json())
+export const moviesApi = { 
+    getTrending : () => 
+        fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}&language=en-US&page=1&region=KR`).then(response => response.json()),
+    
+    getUpcoming : () =>
+        fetch(`${BASE_URL}/movie/upcoming?api_key=${API_KEY}&language=en-US&page=1&region=KR`).then(response => response.json()),
+    
+    getNowPlaying : () => 
+        fetch(`${BASE_URL}/movie/now_playing?api_key=${API_KEY}&language=en-US&page=1&region=KR`).then(response => response.json())
+}
 
 
 
-export const moviesApi = { getTrending,getUpcoming,getNowPlaying}
+export const tvApi = {
+    getTrending : () => 
+        fetch(`${BASE_URL}/trending/tv/week?api_key=${API_KEY}&language=en-US&page=1&region=KR`).then(response => response.json()),
+    airingToday : () => 
+        fetch(`${BASE_URL}/tv/airing_today?api_key=${API_KEY}&language=en-US&page=1&region=KR`).then(response => response.json()),
+    topRate : () => 
+        fetch(`${BASE_URL}/tv/top_rated?api_key=${API_KEY}&language=en-US&page=1&region=KR`).then(response => response.json()),
+        
+}

@@ -9,6 +9,8 @@ import VMedia from '../components/VMedia';
 import HMedia from '../components/HMedia';
 import { QueryClient, useQuery, useQueryClient } from 'react-query';
 import { Movie, MovieResponse, moviesApi } from '../api';
+import Loader from '../components/Loader';
+import HList from '../components/HList';
 
 // https://api.themoviedb.org/3/movie/now_playing?api_key=cec1dbc5f2281d2a147e666dc08b5e0f&language=en-US&page=1&region=KR
 
@@ -18,12 +20,7 @@ const Container = styled.ScrollView`
 `
 
 
-const Loader = styled.View`
-    flex: 1;
-    justify-content: center;
-    align-items: center;
-    background-color: ${props => props.theme.mainBgClolor};
-`
+
 
 
 const ListTitle = styled.Text`
@@ -85,9 +82,7 @@ const Movies:React.FC<NativeStackScreenProps<any,'Movies'>> = () => {
     const refreshing =  isRefetchingNowPlaying || isRefetchingTrending || isRefetchingUpComing
     // console.log(Object.values(nowPlayingData.results[0]).map(v => typeof v));
     return loading ? 
-    <Loader>
-        <ActivityIndicator size="large"/>
-    </Loader>
+    <Loader/>
      : (
 
         upComingData ? 
@@ -117,29 +112,7 @@ const Movies:React.FC<NativeStackScreenProps<any,'Movies'>> = () => {
                             />
                         )}
                     </Swiper>
-                    <ListContainer>
-                        <ListTitle>Trending Movies</ListTitle>
-                        {
-                            trendingData ? (
-                            <TrendingSroll
-                                data={trendingData.results}
-                                horizontal 
-                                keyExtractor={(item) => item.id + ""}
-                                contentContainerStyle={{paddingHorizontal:30}}
-                                showsHorizontalScrollIndicator={false}
-                                ItemSeparatorComponent={() => <VSeparator/>}
-                                renderItem={({item} : any) => (
-                                    <VMedia
-                                        posterPath={item.poster_path}
-                                        originalTitle={item.original_title}
-                                        voteAverage={item.vote_average}
-                                    />
-                                )}
-                            />
-                            ) : null
-                        }
-
-                    </ListContainer>
+                    {trendingData ? <HList title='Trending Movies' data={trendingData?.results}/> : null}
                     <CommingSoonTitle>Comming soon</CommingSoonTitle>
                 </>
             }
