@@ -8,7 +8,7 @@ import Poster from '../components/Poster';
 import VMedia from '../components/VMedia';
 import HMedia from '../components/HMedia';
 import { QueryClient, useQuery, useQueryClient } from 'react-query';
-import { moviesApi } from '../api';
+import { Movie, MovieResponse, moviesApi } from '../api';
 
 // https://api.themoviedb.org/3/movie/now_playing?api_key=cec1dbc5f2281d2a147e666dc08b5e0f&language=en-US&page=1&region=KR
 
@@ -55,22 +55,8 @@ const HSeparator = styled.View`
 
 const {height : SCREEN_HEIGHT} = Dimensions.get("window");
 
-const renderVMedia = ({item}) => (
-    <VMedia
-        posterPath={item.poster_path}
-        originalTitle={item.original_title}
-        voteAverage={item.vote_average}
-    />
-)
 
-const renderHMedia = ({item}) => (
-    <HMedia
-        posterPath={item.poster_path}
-        originalTitle={item.original_title}
-        overview={item.overview}
-        releaseDate={item.release_date}  
-    />
-)
+
 
 
 
@@ -80,29 +66,31 @@ const Movies:React.FC<NativeStackScreenProps<any,'Movies'>> = () => {
         isLoading:nowPlayingLoading,
         data:nowPlayingData,
         isRefetching:isRefetchingNowPlaying
-    } = useQuery(["movies","nowPlaying"],moviesApi.getNowPlaying)
+    } = useQuery<MovieResponse>(["movies","nowPlaying"],moviesApi.getNowPlaying)
     const {
         isLoading:upComingLoading,
         data:upComingData,
         isRefetching:isRefetchingUpComing
-    } = useQuery(["movies","upComing"],moviesApi.getUpcoming)
+    } = useQuery<MovieResponse>(["movies","upComing"],moviesApi.getUpcoming)
     const {
         isLoading:trendingLoading,
         data:trendingData,
         isRefetching:isRefetchingTrending
-    } = useQuery(["movies","trending"],moviesApi.getTrending)
+    } = useQuery<MovieResponse>(["movies","trending"],moviesApi.getTrending)
     const onRefresh = async () => {
         queryClient.refetchQueries(["movies"]);
     };  
 
-    const movieKeyExtractor = (item) => item.id+""
     const loading = nowPlayingLoading || upComingLoading || trendingLoading
     const refreshing =  isRefetchingNowPlaying || isRefetchingTrending || isRefetchingUpComing
+    // console.log(Object.values(nowPlayingData.results[0]).map(v => typeof v));
     return loading ? 
     <Loader>
         <ActivityIndicator size="large"/>
     </Loader>
      : (
+
+        upComingData ? 
         <FlatList
             data={upComingData.results}
             refreshing={refreshing} 
@@ -118,11 +106,11 @@ const Movies:React.FC<NativeStackScreenProps<any,'Movies'>> = () => {
                     showsButtons={false} 
                     containerStyle={{marginBottom:30, width:"100%",height:SCREEN_HEIGHT / 4}}
                     >
-                        {nowPlayingData.results.map(movie => 
+                        {nowPlayingData?.results.map(movie => 
                             <Slide 
                                 key={movie.id}
-                                backdrop_path={movie.backdrop_path}
-                                poster_path={movie.poster_path}
+                                backdrop_path={movie.backdrop_path || ""}
+                                poster_path={movie.poster_path || ""}
                                 original_title={movie.original_title}
                                 vote_average={movie.vote_average}
                                 overview={movie.overview}
@@ -131,25 +119,43 @@ const Movies:React.FC<NativeStackScreenProps<any,'Movies'>> = () => {
                     </Swiper>
                     <ListContainer>
                         <ListTitle>Trending Movies</ListTitle>
-                        <TrendingSroll
-                            data={trendingData.results}
-                            horizontal 
-                            keyExtractor={movieKeyExtractor}
-                            contentContainerStyle={{paddingHorizontal:30}}
-                            showsHorizontalScrollIndicator={false}
-                            ItemSeparatorComponent={() => <VSeparator/>}
-                            renderItem={renderVMedia}
-                        />
+                        {
+                            trendingData ? (
+                            <TrendingSroll
+                                data={trendingData.results}
+                                horizontal 
+                                keyExtractor={(item) => item.id + ""}
+                                contentContainerStyle={{paddingHorizontal:30}}
+                                showsHorizontalScrollIndicator={false}
+                                ItemSeparatorComponent={() => <VSeparator/>}
+                                renderItem={({item} : any) => (
+                                    <VMedia
+                                        posterPath={item.poster_path}
+                                        originalTitle={item.original_title}
+                                        voteAverage={item.vote_average}
+                                    />
+                                )}
+                            />
+                            ) : null
+                        }
+
                     </ListContainer>
                     <CommingSoonTitle>Comming soon</CommingSoonTitle>
                 </>
             }
-            keyExtractor={movieKeyExtractor}
+            keyExtractor={(item) => item.id + ""}
             ItemSeparatorComponent={() => <HSeparator/>}
-            renderItem={renderHMedia}
-        />
+            renderItem={({item}) => (
+                <HMedia
+                    posterPath={item.poster_path || ""}
+                    originalTitle={item.original_title}
+                    overview={item.overview}
+                    releaseDate={item.release_date}  
+                />
+            )}
+        /> : null
            
-    )
+    ) 
 }
 
 
