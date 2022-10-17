@@ -7,11 +7,10 @@ import Slide from '../components/Slide';
 import Poster from '../components/Poster';
 import VMedia from '../components/VMedia';
 import HMedia from '../components/HMedia';
-import { useQuery } from 'react-query';
+import { QueryClient, useQuery, useQueryClient } from 'react-query';
 import { moviesApi } from '../api';
 
 // https://api.themoviedb.org/3/movie/now_playing?api_key=cec1dbc5f2281d2a147e666dc08b5e0f&language=en-US&page=1&region=KR
-
 
 
 
@@ -76,17 +75,29 @@ const renderHMedia = ({item}) => (
 
 
 const Movies:React.FC<NativeStackScreenProps<any,'Movies'>> = () => {
-    const [refreshing,setRefershing] = useState(false);
-
-    const {isLoading:nowPlayingLoading,data:nowPlayingData} = useQuery("nowPlaying",moviesApi.getNowPlaying)
-    const {isLoading:upComingLoading,data:upComingData} = useQuery("upComing",moviesApi.getUpcoming)
-    const {isLoading:trendingLoading,data:trendingData} = useQuery("trending",moviesApi.getTrending)
+    const queryClient = useQueryClient();
+    const {
+        isLoading:nowPlayingLoading,
+        data:nowPlayingData,
+        isRefetching:isRefetchingNowPlaying
+    } = useQuery(["movies","nowPlaying"],moviesApi.getNowPlaying)
+    const {
+        isLoading:upComingLoading,
+        data:upComingData,
+        isRefetching:isRefetchingUpComing
+    } = useQuery(["movies","upComing"],moviesApi.getUpcoming)
+    const {
+        isLoading:trendingLoading,
+        data:trendingData,
+        isRefetching:isRefetchingTrending
+    } = useQuery(["movies","trending"],moviesApi.getTrending)
     const onRefresh = async () => {
-        
+        queryClient.refetchQueries(["movies"]);
     };  
 
     const movieKeyExtractor = (item) => item.id+""
     const loading = nowPlayingLoading || upComingLoading || trendingLoading
+    const refreshing =  isRefetchingNowPlaying || isRefetchingTrending || isRefetchingUpComing
     return loading ? 
     <Loader>
         <ActivityIndicator size="large"/>
