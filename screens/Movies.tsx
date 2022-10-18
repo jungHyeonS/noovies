@@ -59,6 +59,7 @@ const {height : SCREEN_HEIGHT} = Dimensions.get("window");
 
 const Movies:React.FC<NativeStackScreenProps<any,'Movies'>> = () => {
     const queryClient = useQueryClient();
+    const [refreshing,setRefreshing] = useState(false);
     const {
         isLoading:nowPlayingLoading,
         data:nowPlayingData,
@@ -75,11 +76,12 @@ const Movies:React.FC<NativeStackScreenProps<any,'Movies'>> = () => {
         isRefetching:isRefetchingTrending
     } = useQuery<MovieResponse>(["movies","trending"],moviesApi.getTrending)
     const onRefresh = async () => {
-        queryClient.refetchQueries(["movies"]);
+        setRefreshing(true);
+        await queryClient.refetchQueries(["movies"]);
+        setRefreshing(false);
     };  
 
     const loading = nowPlayingLoading || upComingLoading || trendingLoading
-    const refreshing =  isRefetchingNowPlaying || isRefetchingTrending || isRefetchingUpComing
     // console.log(Object.values(nowPlayingData.results[0]).map(v => typeof v));
     return loading ? 
     <Loader/>

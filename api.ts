@@ -40,7 +40,11 @@ export const moviesApi = {
         fetch(`${BASE_URL}/movie/upcoming?api_key=${API_KEY}&language=en-US&page=1&region=KR`).then(response => response.json()),
     
     getNowPlaying : () => 
-        fetch(`${BASE_URL}/movie/now_playing?api_key=${API_KEY}&language=en-US&page=1&region=KR`).then(response => response.json())
+        fetch(`${BASE_URL}/movie/now_playing?api_key=${API_KEY}&language=en-US&page=1&region=KR`).then(response => response.json()),
+    search : ({queryKey}) => {
+        const [_,query] = queryKey;
+        return fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&language=en-US&page=1&region=KR&query=${query}`).then(response => response.json())
+    }
 }
 
 
@@ -52,5 +56,9 @@ export const tvApi = {
         fetch(`${BASE_URL}/tv/airing_today?api_key=${API_KEY}&language=en-US&page=1&region=KR`).then(response => response.json()),
     topRate : () => 
         fetch(`${BASE_URL}/tv/top_rated?api_key=${API_KEY}&language=en-US&page=1&region=KR`).then(response => response.json()),
+    search : ({queryKey}) => {
+        const [_,query] = queryKey;
+        return fetch(`${BASE_URL}/search/tv?api_key=${API_KEY}&language=en-US&page=1&region=KR&query=${query}`).then(response => response.json())
+    }
         
 }
