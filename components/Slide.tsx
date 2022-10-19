@@ -3,6 +3,7 @@ import { BlurView } from "expo-blur";
 import React from "react";
 import { StyleSheet, TouchableOpacity, TouchableWithoutFeedback, useColorScheme } from "react-native";
 import styled from "styled-components/native";
+import { Movie } from "../api";
 import { makeImgPath } from "../utils";
 import Poster from "./Poster";
 
@@ -48,15 +49,16 @@ interface SlideProps {
     poster_path:string,
     original_title:string,
     vote_average:number,
-    overview:string
+    overview:string,
+    fulllData:Movie
 }
 
 
-const Slide:React.FC<SlideProps> = ({backdrop_path,poster_path,original_title,vote_average,overview}) => {
+const Slide:React.FC<SlideProps> = ({backdrop_path,poster_path,original_title,vote_average,overview,fulllData}) => {
     const isDark = useColorScheme() == "dark";
     const navgation = useNavigation();
     const goToDetail = () => {
-        navgation.navigate("Stack",{screen:"Detail"})
+        navgation.navigate("Stack",{screen:"Detail",params:{...fulllData}})
     }
     return (
         <TouchableWithoutFeedback onPress={goToDetail}>
