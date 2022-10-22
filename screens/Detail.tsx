@@ -1,12 +1,16 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import React, { useEffect } from "react";
-import { Dimensions, StyleSheet, Text, View } from "react-native";
+import { Dimensions, StyleSheet, Text, View,Linking } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import styled from "styled-components/native";
-import { Movie, TV } from "../api";
+import { Movie, moviesApi, TV, tvApi } from "../api";
 import Poster from "../components/Poster";
 import { makeImgPath } from "../utils";
 import { BLACK_COLOR } from "../colors";
+import { useQuery } from "react-query";
+import Loader from "../components/Loader";
+import {Ionicons} from '@expo/vector-icons'
+import * as WebBrowser from "expo-web-browser"
 
 const {height : SCREEN_HEIGHT} = Dimensions.get("window");
 
@@ -42,7 +46,25 @@ const Overview = styled.Text`
     color:#fff;
     margin-top: 20px;
     padding: 0px 20px;
+    margin: 20px 0px;
 `
+
+const Data = styled.View`
+    padding:  0px 20px;
+`
+
+const VideoBtn = styled.TouchableOpacity`
+    flex-direction: row;
+`
+
+const BtnText = styled.Text`
+    color:white;
+    font-weight: 600;
+    margin-bottom: 10px;
+    line-height: 24px;
+    margin-left: 10px;
+`
+
 
 type RootStackParamList = {
     Detail : Movie | TV
@@ -59,11 +81,26 @@ const Detail:React.FC<DetailScreenProps> = (
         }
     }
 ) => {
+
+    const isMovie = 'original_title' in params
+    const {isLoading,data} = useQuery(
+        [isMovie ? "movies" : "tv",params.id], 
+        isMovie ? moviesApi.detail : tvApi.detail,
+        {enabled:'original_title' in params}
+    );
+    // const {isLoading:tvLoading,data:tvData} = useQuery(["tv",params.id], tvApi.detail,{enabled:'original_name' in params});
+
     useEffect(()=>{
         setOptions({
             title : 'original_title' in params ? "Movie" : "Tv Show"
         })
     },[])
+
+    const openTYLink = async (videoId:string) => {
+        const baseUrl = `http://m.youtube.com/watch?v=${videoId}}`
+        // await Linking.openURL(baseUrl)
+        await WebBrowser.openBrowserAsync(baseUrl);
+    }
     return (
         <Container>
             <Header>
@@ -77,7 +114,17 @@ const Detail:React.FC<DetailScreenProps> = (
                 </Column>
 
             </Header>
-            <Overview>{params.overview}</Overview>
+            <Data>
+                <Overview>{params.overview}</Overview>
+                {isLoading ? <Loader/> : null}
+                {data?.videos?.results?.map(video => (
+                    <VideoBtn key={video.key} onPress={() => openTYLink(video.key)}>
+                        <Ionicons name="logo-youtube" color="white" size={24}/>
+                        <BtnText>{video.name}</BtnText>
+                    </VideoBtn>
+                ))}
+            </Data>
+            
         </Container>
     )
 }
