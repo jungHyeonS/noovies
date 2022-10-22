@@ -1,6 +1,6 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import React, { useEffect } from "react";
-import { Dimensions, StyleSheet, Text, View,Linking } from "react-native";
+import { Dimensions, StyleSheet, Text, View,Linking, TouchableOpacity,Share,Platform } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import styled from "styled-components/native";
 import { Movie, moviesApi, TV, tvApi } from "../api";
@@ -26,7 +26,6 @@ const Header = styled.View`
 `;
 
 const Background = styled.Image`
-    
 `
 
 const Column = styled.View`
@@ -81,20 +80,48 @@ const Detail:React.FC<DetailScreenProps> = (
         }
     }
 ) => {
-
     const isMovie = 'original_title' in params
     const {isLoading,data} = useQuery(
         [isMovie ? "movies" : "tv",params.id], 
         isMovie ? moviesApi.detail : tvApi.detail,
         {enabled:'original_title' in params}
     );
-    // const {isLoading:tvLoading,data:tvData} = useQuery(["tv",params.id], tvApi.detail,{enabled:'original_name' in params});
+
+    const shareMedia = async () => {
+        const isAndroid = Platform.OS === "android";
+        const homepage = isMovie ? `https://www.imdb.com/title/${data.imdb_id}` : data.homepage
+        if(isAndroid){
+            await Share.share({
+                message:`${params.overview}\n Check it out : ${homepage}`,
+                title:'original_title' in params ? params.original_title : params.original_name
+            })
+        }else{
+            await Share.share({
+                url:homepage,
+                title:'original_title' in params ? params.original_title : params.original_name
+            })
+        }
+       
+    }
+    const ShareButton = () => <TouchableOpacity onPress={shareMedia}>
+        <Ionicons name="share-outline" color="white" size={24}/>
+    </TouchableOpacity>
+    
+   
 
     useEffect(()=>{
         setOptions({
-            title : 'original_title' in params ? "Movie" : "Tv Show"
+            title : 'original_title' in params ? "Movie" : "Tv Show",
         })
     },[])
+
+    useEffect(()=>{
+        if(data){
+            setOptions({
+                headerRight:() => <ShareButton/>
+            })    
+        }
+    },[data])
 
     const openTYLink = async (videoId:string) => {
         const baseUrl = `http://m.youtube.com/watch?v=${videoId}}`
@@ -112,7 +139,6 @@ const Detail:React.FC<DetailScreenProps> = (
                         {'original_title' in params ? params.original_title : params.original_name}
                     </Title>
                 </Column>
-
             </Header>
             <Data>
                 <Overview>{params.overview}</Overview>
