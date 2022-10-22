@@ -7,7 +7,7 @@ import Slide from '../components/Slide';
 import Poster from '../components/Poster';
 import VMedia from '../components/VMedia';
 import HMedia from '../components/HMedia';
-import { QueryClient, useQuery, useQueryClient } from 'react-query';
+import { QueryClient, useInfiniteQuery, useQuery, useQueryClient } from 'react-query';
 import { Movie, MovieResponse, moviesApi } from '../api';
 import Loader from '../components/Loader';
 import HList from '../components/HList';
@@ -68,8 +68,15 @@ const Movies:React.FC<NativeStackScreenProps<any,'Movies'>> = () => {
     const {
         isLoading:upComingLoading,
         data:upComingData,
-        isRefetching:isRefetchingUpComing
-    } = useQuery<MovieResponse>(["movies","upComing"],moviesApi.getUpcoming)
+        isRefetching:isRefetchingUpComing,
+        hasNextPage,
+        fetchNextPage,
+    } = useInfiniteQuery<MovieResponse>(["movies","upComing"],moviesApi.getUpcoming,{
+        getNextPageParam:(currentPage) => {
+            const nextPage = currentPage.page + 1;
+            return nextPage > currentPage.total_pages ? null : nextPage;
+        }
+    })
     const {
         isLoading:trendingLoading,
         data:trendingData,
@@ -82,6 +89,12 @@ const Movies:React.FC<NativeStackScreenProps<any,'Movies'>> = () => {
     };  
 
     const loading = nowPlayingLoading || upComingLoading || trendingLoading
+    const loadMore = () => {
+        if(hasNextPage){
+            fetchNextPage()
+        }
+    }
+    console.log(upComingData)
     // console.log(Object.values(nowPlayingData.results[0]).map(v => typeof v));
     return loading ? 
     <Loader/>
@@ -89,9 +102,11 @@ const Movies:React.FC<NativeStackScreenProps<any,'Movies'>> = () => {
 
         upComingData ? 
         <FlatList
-            data={upComingData.results}
+            data={upComingData.pages.map(page => page.results).flat()}
             refreshing={refreshing} 
             onRefresh={onRefresh}
+            // onEndReachedThreshold={0.4}
+            onEndReached={loadMore}
             ListHeaderComponent={
                 <>
                     <Swiper
